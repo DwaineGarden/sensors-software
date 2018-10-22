@@ -204,6 +204,9 @@ bool has_lcd1602 = 0;
 bool has_lcd1602_27 = 0;
 bool has_lcd2004_27 = 0;
 int  debug = 3;
+int RedPin = 12;
+int GreenPin = 14;
+int BluePin = 16;
 
 long int sample_count = 0;
 
@@ -2274,7 +2277,7 @@ void send_csv(const String& data) {
 static String sensorDHT() {
 	String s;
 
-	debug_out(String(FPSTR(DBG_TXT_START_READING)) + "DHT11/22", DEBUG_MED_INFO, 1);
+	debug_out(String(FPSTR(DBG_TXT_START_READING)) + "Adafruit DHT22", DEBUG_MED_INFO, 1);
 
 	// Check if valid number if non NaN (not a number) will be send.
 	last_value_DHT_T = -128;
@@ -2305,7 +2308,7 @@ static String sensorDHT() {
 	}
 	debug_out(F("----"), DEBUG_MIN_INFO, 1);
 
-	debug_out(String(FPSTR(DBG_TXT_END_READING)) + "DHT11/22", DEBUG_MED_INFO, 1);
+	debug_out(String(FPSTR(DBG_TXT_END_READING)) + "Adafruit DHT22", DEBUG_MED_INFO, 1);
 
 	return s;
 }
@@ -2634,10 +2637,12 @@ String sensorPMS() {
 	if ((act_milli - starttime) < (sending_intervall_ms - (warmup_time_SDS_ms + reading_time_SDS_ms))) {
 		if (is_PMS_running) {
 			PMS_cmd(PM_SENSOR_STOP);
+			debug_out(F("The Plantower PMS3005 sensor has been shutdown into power saving mode!"), DEBUG_MED_INFO, 1);
 		}
 	} else {
 		if (! is_PMS_running) {
 			PMS_cmd(PM_SENSOR_START);
+			debug_out(F("The Plantower PMS3005 sensor has been started out of power saving mode!"), DEBUG_MED_INFO, 1);
 		}
 
 		while (serialSDS.available() > 0) {
@@ -2773,6 +2778,26 @@ String sensorPMS() {
 			s += Value2Json("PMS_P0", Float2String(last_value_PMS_P0));
 			s += Value2Json("PMS_P1", Float2String(last_value_PMS_P1));
 			s += Value2Json("PMS_P2", Float2String(last_value_PMS_P2));
+			if ((last_value_PMS_P2 > 36) && (last_value_PMS_P2 < 54)) {
+        			debug_out(F("Setting RGB LED to Yellow"), DEBUG_MIN_INFO, 1);
+        			digitalWrite(BluePin,HIGH);
+        			digitalWrite(GreenPin,LOW);
+        			digitalWrite(RedPin,LOW);
+        			analogWrite(GreenPin, 255);
+        			analogWrite(RedPin, 255);
+      			} else if (last_value_PMS_P2 > 53) {
+          			debug_out(F("Setting RGB LED to Red"), DEBUG_MIN_INFO, 1);
+          			digitalWrite(BluePin,HIGH);
+          			digitalWrite(GreenPin,HIGH);
+          			digitalWrite(RedPin,LOW);
+          			analogWrite(RedPin, 255);      
+      			} else {
+          			debug_out(F("Setting RGB LED to Green"), DEBUG_MIN_INFO, 1);
+          			digitalWrite(BluePin,HIGH);
+          			digitalWrite(RedPin,HIGH);
+          			digitalWrite(GreenPin,LOW);
+          			analogWrite(GreenPin, 255);
+      			}
 		}
 		pms_pm1_sum = 0;
 		pms_pm10_sum = 0;
@@ -3473,7 +3498,10 @@ bool initBME280(char addr) {
  * The Setup                                                     *
  *****************************************************************/
 void setup() {
-	Serial.begin(9600);					// Output to Serial at 9600 baud
+	Serial.begin(115200);					// Output to Serial at 9600 baud
+	pinMode(RedPin, OUTPUT);
+  	pinMode(GreenPin, OUTPUT);
+  	pinMode(BluePin, OUTPUT);
 #if defined(ESP8266)
 	Wire.begin(I2C_PIN_SDA, I2C_PIN_SCL);
 	esp_chipid = String(ESP.getChipId());
@@ -3486,6 +3514,13 @@ void setup() {
 	init_display();
 	init_lcd();
 	setup_webserver();
+	
+	debug_out(F("Setting RGB LED to Blue"), DEBUG_MIN_INFO, 1);
+	digitalWrite(BluePin,LOW);
+  	digitalWrite(RedPin,HIGH);
+  	digitalWrite(GreenPin,HIGH);
+  	analogWrite(BluePin, 255);
+	
 	display_debug(F("Connecting to"), String(wlanssid));
 	connectWifi();						// Start ConnectWifi
 	if (restart_needed) {
@@ -3779,7 +3814,8 @@ void loop() {
 			if (send2dusti) {
 				debug_out(String(FPSTR(DBG_TXT_SENDING_TO_LUFTDATEN)) + F("(PMS): "), DEBUG_MIN_INFO, 1);
 				start_send = millis();
-				sendLuftdaten(result_PMS, PMS_API_PIN, HOST_DUSTI, HTTP_PORT_DUSTI, URL_DUSTI, true, "PMS_");
+				//sendLuftdaten(result_PMS, PMS_API_PIN, HOST_DUSTI, HTTP_PORT_DUSTI, URL_DUSTI, true, "PMS_");
+				sendLuftdaten(result_PMS, 1, HOST_DUSTI, HTTP_PORT_DUSTI, URL_DUSTI, true, "PMS_");
 				sum_send_time += millis() - start_send;
 			}
 		}
@@ -3797,6 +3833,7 @@ void loop() {
 			if (send2dusti) {
 				debug_out(String(FPSTR(DBG_TXT_SENDING_TO_LUFTDATEN)) + F("(DHT): "), DEBUG_MIN_INFO, 1);
 				start_send = millis();
+				//sendLuftdaten(result_DHT, DHT_API_PIN, HOST_DUSTI, HTTP_PORT_DUSTI, URL_DUSTI, true, "DHT_");
 				sendLuftdaten(result_DHT, DHT_API_PIN, HOST_DUSTI, HTTP_PORT_DUSTI, URL_DUSTI, true, "DHT_");
 				sum_send_time += millis() - start_send;
 			}
