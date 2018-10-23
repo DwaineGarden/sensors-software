@@ -68,8 +68,8 @@
 // SoftSerial RX PIN is D1 and goes to SDS TX
 // SoftSerial TX PIN is D2 and goes to SDS RX
 #if defined(ESP8266)
-#define PM_SERIAL_RX D1
-#define PM_SERIAL_TX D2
+#define PM_SERIAL_RX 2
+#define PM_SERIAL_TX 0
 #endif
 
 // define serial interface pins for GPS modules
