@@ -28,7 +28,7 @@
 #define SEND2CUSTOM 0
 
 // NTP Server
-#define NTP_SERVER "0.europe.pool.ntp.org"
+#define NTP_SERVER "0.ca.pool.ntp.org"
 
 // OpenSenseMap
 #define SENSEBOXID ""
@@ -81,7 +81,7 @@
 // DHT22, temperature, humidity
 #define DHT_READ 1
 #define DHT_TYPE DHT22
-#define DHT_API_PIN 7
+#define DHT_API_PIN 4
 
 // HTU21D, temperature, humidity
 #define HTU21D_READ 0
@@ -100,8 +100,8 @@
 #define SDS_API_PIN 1
 
 // PMS1003, PMS300, 3PMS5003, PMS6003, PMS7003
-#define PMS_READ 0
-#define PMS_API_PIN 1
+#define PMS_READ 1
+#define PMS_API_PIN 2
 
 // Honeywell PM sensor
 #define HPM_READ 0
@@ -129,10 +129,10 @@
 #define GPS_API_PIN 9
 
 // automatic firmware updates
-#define AUTO_UPDATE 1
+#define AUTO_UPDATE 0
 
 // use beta firmware
-#define USE_BETA 0
+#define USE_BETA 1
 
 // OLED Display SSD1306 angeschlossen?
 #define HAS_DISPLAY 0
